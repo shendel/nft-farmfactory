@@ -51,7 +51,42 @@ const withdrawModal = new Modal({
           .on('transactionHash', (hash) => {
             const trxNode = document.createElement('div')
             trxNode.classList.add('ff-transaction-link')
-            trxNode.innerHTML = `Pending transaction: <a href="https://${networkName.toLowerCase()}.etherscan.io/tx/${hash}" target="_blank">${hash}</a>`
+
+            let explorerLinkWithHash = `https://${networkName.toLowerCase()}.etherscan.io/tx/${hash}`
+
+            if (networkName.toLowerCase() === "xdai") {
+              explorerLinkWithHash = `https://blockscout.com/xdai/mainnet/tx/${hash}`
+            }
+
+            if (networkName.toLowerCase() === 'fantom') {
+              explorerLinkWithHash = `https://ftmscan.com/tx/${hash}`
+            }
+
+            if (networkName.toLowerCase() === 'harmony') {
+              explorerLinkWithHash = `https://explorer.harmony.one/tx/${hash}`
+            }
+
+            if (networkName.toLowerCase() === 'avax') {
+              explorerLinkWithHash = `https://snowtrace.io/tx/${hash}`
+            }
+
+            if (networkName.toLowerCase() === 'moonriver') {
+              explorerLinkWithHash = `https://moonriver.moonscan.io/tx/${hash}`
+            }
+
+            if (networkName.toLowerCase() === 'aurora') {
+              explorerLinkWithHash = `https://aurorascan.dev/tx/${hash}`
+            }
+
+            if (networkName.toLowerCase() === 'cronos') {
+              explorerLinkWithHash = `https://cronoscan.com/tx/${hash}`
+            }
+
+            if (networkName.toLowerCase() === 'ame') {
+              explorerLinkWithHash = `https://amescan.io/tx/${hash}`
+            }
+
+            trxNode.innerHTML = `Pending transaction: <a href="${explorerLinkWithHash}" target="_blank">${hash}</a>`
 
             this.elems.content.insertBefore(trxNode, buttonContainer)
           })
@@ -68,7 +103,7 @@ const withdrawModal = new Modal({
 
             infoModal.open({
               title: 'Transaction successful',
-              message: 'The tokens were credited to your account.'
+              message: 'Tokens have been withdrawn to your address.'
             })
           })
       }

@@ -1,5 +1,5 @@
 <?php
-namespace FARMFACTORY;
+namespace NFTFARMFACTORY;
 defined( 'ABSPATH' ) || exit;
 
 class View {
@@ -32,7 +32,7 @@ class View {
 
 	public function display( String $template, $arr = [] ) {
 		extract( $arr );
-		include FARMFACTORY_TEMPLATE_DIR . $template;
+		include NFTFARMFACTORY_TEMPLATE_DIR . $template;
 	}
 
 }

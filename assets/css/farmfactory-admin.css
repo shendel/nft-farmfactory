@@ -142,6 +142,17 @@
 	z-index: 10000;
 	background-color: rgb(255 255 255 / 80%);
 }
+.farmfactory-loader-status {
+  display: block;
+  margin-top: 33px;
+  font-size: 16px;
+  position: absolute;
+  top: 50%;
+  left: 0px;
+  right: 0px;
+  text-align: center;
+  font-weight: bold;
+}
 .farmfactory-overlay.visible {
 	display: block;
 }
@@ -156,6 +167,11 @@
 	height: 40px;
 	background-color: #313131;
 	animation: rectangle 1.5s infinite ease-in-out;
+}
+.farmfactory-fake-input {
+  border: 1px solid #c3c4c7;
+  padding: 0.5rem;
+  border-radius: 4px;
 }
 @keyframes rectangle {
 	0% {

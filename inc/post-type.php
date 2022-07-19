@@ -15,13 +15,13 @@ function nftfarmfactory_post_type() {
 		'singular_name'         => esc_html__( 'NFT Farm', 'nftfarmfactory' ),
 		'menu_name'             => esc_html__( 'NFT Farm', 'nftfarmfactory' ),
 		'name_admin_bar'        => esc_html__( 'NFT Farm', 'nftfarmfactory' ),
-		'all_items'             => esc_html__( 'All Farms', 'nftfarmfactory' ),
-		'add_new_item'          => esc_html__( 'Add New Farm', 'nftfarmfactory' ),
+		'all_items'             => esc_html__( 'All NFT Farms', 'nftfarmfactory' ),
+		'add_new_item'          => esc_html__( 'Add New NFT Farm', 'nftfarmfactory' ),
 		'add_new'               => esc_html__( 'Add New', 'nftfarmfactory' ),
-		'new_item'              => esc_html__( 'New Farm', 'nftfarmfactory' ),
-		'edit_item'             => esc_html__( 'Edit Farm', 'nftfarmfactory' ),
-		'update_item'           => esc_html__( 'Update Farm', 'nftfarmfactory' ),
-		'search_items'          => esc_html__( 'Search Farm', 'nftfarmfactory' ),
+		'new_item'              => esc_html__( 'New NFT Farm', 'nftfarmfactory' ),
+		'edit_item'             => esc_html__( 'Edit NFT Farm', 'nftfarmfactory' ),
+		'update_item'           => esc_html__( 'Update NFT Farm', 'nftfarmfactory' ),
+		'search_items'          => esc_html__( 'Search NFT Farm', 'nftfarmfactory' ),
 		'not_found'             => esc_html__( 'Not found', 'nftfarmfactory' ),
 		'not_found_in_trash'    => esc_html__( 'Not found in Trash', 'nftfarmfactory' ),
 		'featured_image'        => esc_html__( 'Reward Token Icon', 'nftfarmfactory' ),
@@ -57,7 +57,7 @@ function nftfarmfactory_remove_date_column( $columns ) {
 	unset( $columns['date'] );
 	return $columns;
 }
-add_filter( 'manage_farmfactory_posts_columns', 'nftfarmfactory_remove_date_column' );
+add_filter( 'manage_nftfarmfactory_posts_columns', 'nftfarmfactory_remove_date_column' );
 
 /**
  * Remove quick edit

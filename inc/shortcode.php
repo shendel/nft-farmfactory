@@ -43,14 +43,14 @@ function nftfarmfactory_main_shortcode( $atts ) {
 
 	if ( null !== $id && get_post( $id ) ) {
 
-		$inline_scripts = nftfarmfactory_shortcode_inline_scripts( $id );
+		$inline_scripts = farmfactory_shortcode_inline_scripts( $id );
 
 		$html = '<div id="ff-widget-' . esc_attr( $id ) . '"></div>';
 
 	} elseif ( null === $id ) {
 
 		$farm_args  = array(
-			'post_type'      => 'farmfactory',
+			'post_type'      => 'nftfarmfactory',
 			'posts_per_page' => -1,
 		);
 		$farm_query = new WP_Query( $farm_args );
@@ -60,7 +60,7 @@ function nftfarmfactory_main_shortcode( $atts ) {
 				$farm_query->the_post();
 				$id = get_the_ID();
 
-				$inline_scripts .= nftfarmfactory_shortcode_inline_scripts( $id );
+				$inline_scripts .= farmfactory_shortcode_inline_scripts( $id );
 
 				$html .= '<div id="ff-widget-' . esc_attr( $id ) . '"></div>';
 
@@ -84,7 +84,7 @@ add_shortcode( 'nftfarmfactory', 'nftfarmfactory_main_shortcode' );
  * Timer Shortcode
  */
 function nftfarmfactory_timer_shortcode() {
-	return '<div id="nft-farmfactory-timer-root"></div>';
+	return '<div id="farmfactory-timer-root"></div>';
 }
 add_shortcode( 'nftfarmfactoryTimer', 'nftfarmfactory_timer_shortcode' );
 

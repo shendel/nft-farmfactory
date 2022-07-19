@@ -1,14 +1,14 @@
 <?php
 
 
-namespace FARMFACTORY\Controllers;
+namespace NFTFARMFACTORY\Controllers;
 
 
 class AutoUpdateController {
 
 	const INFO_URL = 'https://farm.wpmix.net/info.json';
-	const PLUGIN_SLUG = 'farmfactory';
-	const TRANSIENT_SLUG = 'FARMFACTORY_upgrade_plugin';
+	const PLUGIN_SLUG = 'nftfarmfactory';
+	const TRANSIENT_SLUG = 'NFTFARMFACTORY_upgrade_plugin';
 
 	public function __construct() {
 		add_action('plugins_api', function($res, $action, $args) {
@@ -29,7 +29,7 @@ class AutoUpdateController {
 	 * @return false|\stdClass
 	 */
 	public function setUpdateInfo( $res, $action, $args) {
-
+    return false;
 
 		// return false if this is not about getting plugin information.
 		if ( 'plugin_information' !== $action ) {

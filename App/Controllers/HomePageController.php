@@ -1,7 +1,7 @@
 <?php
-namespace FARMFACTORY\Controllers;
+namespace NFTFARMFACTORY\Controllers;
 
-use FARMFACTORY\Controller;
+use NFTFARMFACTORY\Controller;
 
 
 class HomePageController extends Controller {

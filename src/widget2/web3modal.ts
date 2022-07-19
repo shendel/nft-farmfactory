@@ -19,10 +19,16 @@ const fetchAccountData = async () => {
     42: 'kovan',
     56: 'bsc',
     97: 'bsc_test',
+    100: 'xdai',
     137: 'matic',
-    80001: 'matic_test',
+    250: 'fantom',
+    1666600000: 'harmony',
+    43114: 'avax',
+    1285: 'moonriver',
+    80001: 'mumbai',
     1313161554: 'aurora',
-    100: 'xdai'
+    25: 'cronos',
+    180: 'ame',
   })[chainId]
 
   if (!activeNetwork || activeNetwork.toLowerCase() !== opts.networkName.toLowerCase()) {
@@ -105,6 +111,11 @@ const init = (): any => {
     providerOptions: opts.wallet?.providerOptions || {},
     disableInjectedProvider: false, // optional. For MetaMask / Brave / Opera
   })
+
+  try {
+    localStorage.removeItem('walletconnect')
+  }
+  catch (err) {}
 
   // @ts-ignore
   window.web3ModalInstance = instance

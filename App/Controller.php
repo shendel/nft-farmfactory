@@ -1,5 +1,5 @@
 <?php
-namespace FARMFACTORY;
+namespace NFTFARMFACTORY;
 
 defined( 'ABSPATH' ) || exit;
 

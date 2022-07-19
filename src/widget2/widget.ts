@@ -86,7 +86,7 @@ const getHtml = ({ withAPY, withAPR, apyLabel = 'APY', aprLabel = 'APR' }) => `
     </div>
   </div>
   <div class="ff-widget-footer">
-    <button class="ff-button ff-widget-unlock-button" type="button">Unlock wallet</button>
+    <button id="connect-wallet" class="ff-button ff-widget-unlock-button" type="button">Connect wallet</button>
     <button class="ff-button ff-widget-approve-button ff-hidden" type="button">Approve contract</button>
   </div>
 `
@@ -328,7 +328,41 @@ class Widget {
 
       return this.contracts.farm.methods.getReward().send({ from: account })
         .on('transactionHash', (hash) => {
-          console.log('Harvest trx:', `https://${networkName.toLowerCase()}.etherscan.io/tx/${hash}`)
+          let explorerLinkWithHash = `https://${networkName.toLowerCase()}.etherscan.io/tx/${hash}`
+
+          if (networkName.toLowerCase() === "xdai") {
+            explorerLinkWithHash = `https://blockscout.com/xdai/mainnet/tx/${hash}`
+          }
+
+          if (networkName.toLowerCase() === "fantom") {
+            explorerLinkWithHash = `https://ftmscan.com/tx/${hash}`
+          }
+
+          if (networkName.toLowerCase() === 'harmony') {
+            explorerLinkWithHash = `https://explorer.harmony.one/tx/${hash}`
+          }
+
+          if (networkName.toLowerCase() === 'avax') {
+            explorerLinkWithHash = `https://snowtrace.io/tx/${hash}`
+          }
+
+          if (networkName.toLowerCase() === 'moonriver') {
+            explorerLinkWithHash = `https://moonriver.moonscan.io/tx/${hash}`
+          }
+
+          if (networkName.toLowerCase() === 'aurora') {
+            explorerLinkWithHash = `https://aurorascan.dev/tx/${hash}`
+          }
+
+          if (networkName.toLowerCase() === 'cronos') {
+            explorerLinkWithHash = `https://cronoscan.com/tx/${hash}`
+          }
+
+          if (networkName.toLowerCase() === 'ame') {
+            explorerLinkWithHash = `https://amescan.io/tx/${hash}`
+          }
+
+          console.log('Harvest trx:', explorerLinkWithHash)
         })
         .on('error', (err) => {
           console.error(err)
@@ -343,7 +377,7 @@ class Widget {
 
           infoModal.open({
             title: 'Transaction successful',
-            message: 'The tokens were credited to the contract.'
+            message: 'Tokens have been transferred to your address.'
           })
         })
     })
@@ -357,13 +391,19 @@ class Widget {
       mainnet: 'https://mainnet.infura.io/v3/5ffc47f65c4042ce847ef66a3fa70d4c',
       ropsten: 'https://ropsten.infura.io/v3/5ffc47f65c4042ce847ef66a3fa70d4c',
       kovan: 'https://kovan.infura.io/v3/5ffc47f65c4042ce847ef66a3fa70d4c',
-      matic: 'https://betav2.matic.network',
-      matic_test: 'https://betav2.matic.network',
+      matic: 'https://polygon-rpc.com/',
+      mumbai: 'https://rpc-mumbai.maticvigil.com',
       // https://docs.binance.org/smart-chain/developer/create-wallet.html
       bsc: 'https://bsc-dataseed1.binance.org:443',
       bsc_test: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       xdai: 'https://rpc.xdaichain.com',
-      aurora: 'https://mainnet.aurora.dev'
+      aurora: 'https://mainnet.aurora.dev',
+      fantom: 'https://rpc.ftm.tools/',
+      harmony: 'https://api.harmony.one',
+      avax: 'https://api.avax.network/ext/bc/C/rpc',
+      moonriver: 'https://rpc.moonriver.moonbeam.network',
+      cronos: 'https://evm.cronos.org',
+      ame: 'https://node1.amechain.io/',
     }
 
     const network = networks[networkName.toLowerCase()]

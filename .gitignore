@@ -6,10 +6,11 @@
 
 *-lock.*
 yarn.lock
+package-lock.json
 
 node_modules
 
 /*.css
-/*.html
+_html
 Farm.json
 /example/

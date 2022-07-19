@@ -21,4 +21,4 @@ define( 'NFTFARMFACTORY_VER', '1.0.0');
 /**
  * Plugin Init
  */
-require FARMFACTORY_PATH . 'inc/init.php';
+require NFTFARMFACTORY_PATH . 'inc/init.php';
