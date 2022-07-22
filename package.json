@@ -47,12 +47,11 @@
     "rollup": "^2.1.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-typescript2": "^0.26.0",
-    "rollup-plugin-uglify": "^6.0.4",
     "typescript": "^3.8.3"
   },
   "dependencies": {
     "@metamask/detect-provider": "^1.2.0",
-    "@openzeppelin/contracts": "^3.4.0",
+    "@openzeppelin/contracts": "^4.7.1",
     "solc": "^0.6.8"
   }
 }
