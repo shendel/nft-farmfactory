@@ -1,29 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-/**
- * @title ERC721 token receiver interface
- * @dev Interface for any contract that wants to support safeTransfers
- * from ERC721 asset contracts.
- */
-interface IERC721Receiver {
-    /**
-     * @dev Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom}
-     * by `operator` from `from`, this function is called.
-     *
-     * It must return its Solidity selector to confirm the token transfer.
-     * If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted.
-     *
-     * The selector can be obtained in Solidity with `IERC721Receiver.onERC721Received.selector`.
-     */
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4);
-}
-
 interface IERC165 {
     /**
      * @dev Returns true if this contract implements the interface defined by
@@ -818,7 +795,7 @@ abstract contract Ownable is Context {
 }
 
 
-contract Farm is ReentrancyGuard, Pausable, Ownable, IERC721Receiver {
+contract Farm is ReentrancyGuard, Pausable, Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -836,6 +813,7 @@ contract Farm is ReentrancyGuard, Pausable, Ownable, IERC721Receiver {
 
     IERC20 public rewardsToken;
     IERC721 public nftCollection;
+    address private nftCollectionAddress;
     // Rewards per hour per token deposited in wei
     uint256 private rewardsPerHour = 100000;
     
@@ -843,40 +821,40 @@ contract Farm is ReentrancyGuard, Pausable, Ownable, IERC721Receiver {
     // Mapping of tokenId to staker. For remember who to send back ther token
     mapping(uint256 => address) public stakerAddress;
 
-    constructor(IERC721 _nftCollection, IERC20 _rewardsToken, uint256 _rewardsPerHour) {
-        nftCollection = _nftCollection;
+    constructor(address _nftCollection, IERC20 _rewardsToken, uint256 _rewardsPerHour) {
+        nftCollection = IERC721(_nftCollection);
+        nftCollectionAddress = _nftCollection;
         rewardsToken = _rewardsToken;
         rewardsPerHour = _rewardsPerHour;
     }
 
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external override pure returns (bytes4) {
-        
-        return bytes4(keccak256(abi.encodePacked(operator, from, tokenId, data)));
-    }
-
-    function stake(uint256 _tokenId) external nonReentrant {
+    function _stake(address _staker, uint256 _tokenId) internal {
         require(
-            nftCollection.ownerOf(_tokenId) == msg.sender,
+            nftCollection.ownerOf(_tokenId) == _staker,
             "You don't own this token!"
         );
 
-        if (stakers[msg.sender].amountStaked > 0) {
-            uint256 rewards = calculateRewards(msg.sender);
-            stakers[msg.sender].unclaimedRewards += rewards;
+        if (stakers[_staker].amountStaked > 0) {
+            uint256 rewards = calculateRewards(_staker);
+            stakers[_staker].unclaimedRewards += rewards;
         }
 
-        nftCollection.transferFrom(msg.sender, address(this), _tokenId);
+        nftCollection.transferFrom(_staker, address(this), _tokenId);
 
-        StakedToken memory stakedToken = StakedToken(msg.sender, _tokenId);
-        stakers[msg.sender].stakedTokens.push(stakedToken);
-        stakers[msg.sender].amountStaked++;
-        stakerAddress[_tokenId] = msg.sender;
-        stakers[msg.sender].timeOfLastUpdate = block.timestamp;
+        StakedToken memory stakedToken = StakedToken(_staker, _tokenId);
+        stakers[_staker].stakedTokens.push(stakedToken);
+        stakers[_staker].amountStaked++;
+        stakerAddress[_tokenId] = _staker;
+        stakers[_staker].timeOfLastUpdate = block.timestamp;
+    }
+
+    function adminWithdrawRewards() external onlyOwner whenPaused {
+        uint256 _balance = rewardsToken.balanceOf(address(this));
+        rewardsToken.safeTransfer(msg.sender, _balance);
+    }
+
+    function stake(uint256 _tokenId) external nonReentrant whenNotPaused {
+        _stake(msg.sender, _tokenId);
     }
 
     function withdraw(uint256 _tokenId) external nonReentrant {

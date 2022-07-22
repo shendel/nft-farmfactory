@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.7+commit.e28d00a7"
+		"version": "0.8.0+commit.c7dfd78e"
 	},
 	"language": "Solidity",
 	"output": {
@@ -8,7 +8,7 @@
 			{
 				"inputs": [
 					{
-						"internalType": "contract IERC721",
+						"internalType": "address",
 						"name": "_nftCollection",
 						"type": "address"
 					},
@@ -73,6 +73,32 @@
 			},
 			{
 				"inputs": [],
+				"name": "adminWithdrawRewards",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_staker",
+						"type": "address"
+					}
+				],
+				"name": "availableRewards",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "claimRewards",
 				"outputs": [],
 				"stateMutability": "nonpayable",
@@ -120,40 +146,6 @@
 					}
 				],
 				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "operator",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "from",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "tokenId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "bytes",
-						"name": "data",
-						"type": "bytes"
-					}
-				],
-				"name": "onERC721Received",
-				"outputs": [
-					{
-						"internalType": "bytes4",
-						"name": "",
-						"type": "bytes4"
-					}
-				],
-				"stateMutability": "pure",
 				"type": "function"
 			},
 			{
@@ -293,9 +285,6 @@
 		"devdoc": {
 			"kind": "dev",
 			"methods": {
-				"onERC721Received(address,address,uint256,bytes)": {
-					"details": "Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721Receiver.onERC721Received.selector`."
-				},
 				"owner()": {
 					"details": "Returns the address of the current owner."
 				},
@@ -321,7 +310,7 @@
 		"compilationTarget": {
 			"Farm.sol": "Farm"
 		},
-		"evmVersion": "london",
+		"evmVersion": "istanbul",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -334,11 +323,11 @@
 	},
 	"sources": {
 		"Farm.sol": {
-			"keccak256": "0x3872bb00f20fad15c02a27614c4f610aff2c3a02604b4bd70cb50d378cc2fea5",
+			"keccak256": "0xbe8693a0fb3533260cb89e1c4572f82d90a7683f1babe4ce979d8fc37173bf74",
 			"license": "Unlicense",
 			"urls": [
-				"bzz-raw://9c8919d1ce4280956cf3202fdf57b76b6335823011bff72b3f9e740bf4d1a0f6",
-				"dweb:/ipfs/QmXDNxjizSa8X3tBgSefNAF2TkXt5XHYZrGmLhnh6ASvkP"
+				"bzz-raw://12c9de797df203b885e60b423708c21c54c4d4e975b6cbb15109fba33ecce8d9",
+				"dweb:/ipfs/QmfJzDHQypbxPp1Mgin9zb7aaJt35kYNU42AQdKHg6WX2E"
 			]
 		}
 	},

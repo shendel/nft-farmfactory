@@ -1,6 +1,6 @@
 {
 	"compiler": {
-		"version": "0.8.7+commit.e28d00a7"
+		"version": "0.8.0+commit.c7dfd78e"
 	},
 	"language": "Solidity",
 	"output": {
@@ -44,7 +44,7 @@
 		"compilationTarget": {
 			"Farm.sol": "IERC165"
 		},
-		"evmVersion": "london",
+		"evmVersion": "istanbul",
 		"libraries": {},
 		"metadata": {
 			"bytecodeHash": "ipfs"
@@ -57,11 +57,11 @@
 	},
 	"sources": {
 		"Farm.sol": {
-			"keccak256": "0x3872bb00f20fad15c02a27614c4f610aff2c3a02604b4bd70cb50d378cc2fea5",
+			"keccak256": "0xbe8693a0fb3533260cb89e1c4572f82d90a7683f1babe4ce979d8fc37173bf74",
 			"license": "Unlicense",
 			"urls": [
-				"bzz-raw://9c8919d1ce4280956cf3202fdf57b76b6335823011bff72b3f9e740bf4d1a0f6",
-				"dweb:/ipfs/QmXDNxjizSa8X3tBgSefNAF2TkXt5XHYZrGmLhnh6ASvkP"
+				"bzz-raw://12c9de797df203b885e60b423708c21c54c4d4e975b6cbb15109fba33ecce8d9",
+				"dweb:/ipfs/QmfJzDHQypbxPp1Mgin9zb7aaJt35kYNU42AQdKHg6WX2E"
 			]
 		}
 	},
