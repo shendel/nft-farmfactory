@@ -24,6 +24,152 @@ interface IERC721Receiver {
     ) external returns (bytes4);
 }
 
+interface IERC165 {
+    /**
+     * @dev Returns true if this contract implements the interface defined by
+     * `interfaceId`. See the corresponding
+     * https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]
+     * to learn more about how these ids are created.
+     *
+     * This function call must use less than 30 000 gas.
+     */
+    function supportsInterface(bytes4 interfaceId) external view returns (bool);
+}
+
+interface IERC721 is IERC165 {
+    /**
+     * @dev Emitted when `tokenId` token is transferred from `from` to `to`.
+     */
+    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+
+    /**
+     * @dev Emitted when `owner` enables `approved` to manage the `tokenId` token.
+     */
+    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
+
+    /**
+     * @dev Emitted when `owner` enables or disables (`approved`) `operator` to manage all of its assets.
+     */
+    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+
+    /**
+     * @dev Returns the number of tokens in ``owner``'s account.
+     */
+    function balanceOf(address owner) external view returns (uint256 balance);
+
+    /**
+     * @dev Returns the owner of the `tokenId` token.
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
+     */
+    function ownerOf(uint256 tokenId) external view returns (address owner);
+
+    /**
+     * @dev Safely transfers `tokenId` token from `from` to `to`.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must exist and be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+     *
+     * Emits a {Transfer} event.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes calldata data
+    ) external;
+
+    /**
+     * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
+     * are aware of the ERC721 protocol to prevent tokens from being forever locked.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must exist and be owned by `from`.
+     * - If the caller is not `from`, it must have been allowed to move this token by either {approve} or {setApprovalForAll}.
+     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+     *
+     * Emits a {Transfer} event.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) external;
+
+    /**
+     * @dev Transfers `tokenId` token from `from` to `to`.
+     *
+     * WARNING: Usage of this method is discouraged, use {safeTransferFrom} whenever possible.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) external;
+
+    /**
+     * @dev Gives permission to `to` to transfer `tokenId` token to another account.
+     * The approval is cleared when the token is transferred.
+     *
+     * Only a single account can be approved at a time, so approving the zero address clears previous approvals.
+     *
+     * Requirements:
+     *
+     * - The caller must own the token or be an approved operator.
+     * - `tokenId` must exist.
+     *
+     * Emits an {Approval} event.
+     */
+    function approve(address to, uint256 tokenId) external;
+
+    /**
+     * @dev Approve or remove `operator` as an operator for the caller.
+     * Operators can call {transferFrom} or {safeTransferFrom} for any token owned by the caller.
+     *
+     * Requirements:
+     *
+     * - The `operator` cannot be the caller.
+     *
+     * Emits an {ApprovalForAll} event.
+     */
+    function setApprovalForAll(address operator, bool _approved) external;
+
+    /**
+     * @dev Returns the account approved for `tokenId` token.
+     *
+     * Requirements:
+     *
+     * - `tokenId` must exist.
+     */
+    function getApproved(uint256 tokenId) external view returns (address operator);
+
+    /**
+     * @dev Returns if the `operator` is allowed to manage all of the assets of `owner`.
+     *
+     * See {setApprovalForAll}
+     */
+    function isApprovedForAll(address owner, address operator) external view returns (bool);
+}
+
 library Address {
     /**
      * @dev Returns true if `account` is a contract.
@@ -671,223 +817,139 @@ abstract contract Ownable is Context {
     }
 }
 
-contract Farm is ReentrancyGuard, Pausable, Ownable {
+
+contract Farm is ReentrancyGuard, Pausable, Ownable, IERC721Receiver {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    /* ========== STATE VARIABLES ========== */
+    struct StakedToken {
+        address staker;
+        uint256 tokenId;
+    }
+    // Staker info
+    struct Staker {
+        uint256 amountStaked;
+        StakedToken[] stakedTokens;
+        uint256 timeOfLastUpdate;
+        uint256 unclaimedRewards;
+    }
 
     IERC20 public rewardsToken;
-    IERC20 public stakingToken;
-    uint256 public periodFinish = 0;
-    uint256 public rewardRate = 0;
-    uint256 public rewardsDuration;
-    uint256 public lastUpdateTime;
-    uint256 public rewardPerTokenStored;
-    uint256 public stakingTokensDecimalRate;
-    bool private initialised;
+    IERC721 public nftCollection;
+    // Rewards per hour per token deposited in wei
+    uint256 private rewardsPerHour = 100000;
+    
+    mapping(address => Staker) public stakers;
+    // Mapping of tokenId to staker. For remember who to send back ther token
+    mapping(uint256 => address) public stakerAddress;
 
-    mapping(address => uint256) public userRewardPerTokenPaid;
-    mapping(address => uint256) public rewards;
-
-    uint256 private _totalSupply;
-    mapping(address => uint256) private _balances;
-
-    /* ========== CONSTRUCTOR ========== */
-
-    constructor (
-        address _rewardsToken,
-        address _stakingToken,
-        uint _rewardsDuration,
-        uint _stakingTokensDecimal
-    ) {
-        stakingTokensDecimalRate = pow(10, _stakingTokensDecimal);
-        rewardsToken = IERC20(_rewardsToken);
-        stakingToken = IERC20(_stakingToken);
-        rewardsDuration = _rewardsDuration;
+    constructor(IERC721 _nftCollection, IERC20 _rewardsToken, uint256 _rewardsPerHour) {
+        nftCollection = _nftCollection;
+        rewardsToken = _rewardsToken;
+        rewardsPerHour = _rewardsPerHour;
     }
 
-
-
-    /* ========== VIEWS ========== */
-
-    function totalSupply() external view returns (uint256) {
-        return _totalSupply;
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external override pure returns (bytes4) {
+        
+        return bytes4(keccak256(abi.encodePacked(operator, from, tokenId, data)));
     }
 
-    function pow(uint n, uint e) public pure returns (uint) {
+    function stake(uint256 _tokenId) external nonReentrant {
+        require(
+            nftCollection.ownerOf(_tokenId) == msg.sender,
+            "You don't own this token!"
+        );
 
-        if (e == 0) {
-            return 1;
-        } else if (e == 1) {
-            return n;
-        } else {
-            uint p = pow(n, e.div(2));
-            p = p.mul(p);
-            if (e.mod(2) == 1) {
-                p = p.mul(n);
+        if (stakers[msg.sender].amountStaked > 0) {
+            uint256 rewards = calculateRewards(msg.sender);
+            stakers[msg.sender].unclaimedRewards += rewards;
+        }
+
+        nftCollection.transferFrom(msg.sender, address(this), _tokenId);
+
+        StakedToken memory stakedToken = StakedToken(msg.sender, _tokenId);
+        stakers[msg.sender].stakedTokens.push(stakedToken);
+        stakers[msg.sender].amountStaked++;
+        stakerAddress[_tokenId] = msg.sender;
+        stakers[msg.sender].timeOfLastUpdate = block.timestamp;
+    }
+
+    function withdraw(uint256 _tokenId) external nonReentrant {
+        require(
+            stakers[msg.sender].amountStaked > 0,
+            "You have no tokens staked"
+        );
+        require(stakerAddress[_tokenId] == msg.sender, "You don't own this token!");
+
+        // Update the rewards for this user, as the amount of rewards decreases with less tokens.
+        uint256 rewards = calculateRewards(msg.sender);
+        stakers[msg.sender].unclaimedRewards += rewards;
+
+
+        uint256 index = 0;
+        for (uint256 i = 0; i < stakers[msg.sender].stakedTokens.length; i++) {
+            if (stakers[msg.sender].stakedTokens[i].tokenId == _tokenId) {
+                index = i;
+                break;
             }
-            return p;
         }
+
+
+        stakers[msg.sender].stakedTokens[index].staker = address(0);
+        stakers[msg.sender].amountStaked--;
+        stakerAddress[_tokenId] = address(0);
+
+        nftCollection.transferFrom(address(this), msg.sender, _tokenId);
+        stakers[msg.sender].timeOfLastUpdate = block.timestamp;
     }
 
-    function balanceOf(address account) external view returns (uint256) {
-        return _balances[account];
-    }
-
-    function lastTimeRewardApplicable() public view returns (uint256) {
-        return min(block.timestamp, periodFinish);
-    }
-
-    function rewardPerToken() public view returns (uint256) {
-        if (_totalSupply == 0) {
-            return rewardPerTokenStored;
-        }
-        return
-        rewardPerTokenStored.add(
-            lastTimeRewardApplicable()
-            .sub(lastUpdateTime)
-            .mul(rewardRate)
-            .mul(stakingTokensDecimalRate)
-            .div(_totalSupply)
-        );
-    }
-
-    function earned(address account) public view returns (uint256) {
-        return
-        _balances[account]
-        .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
-        .div(stakingTokensDecimalRate)
-        .add(rewards[account]);
-    }
-
-    function getRewardForDuration() external view returns (uint256) {
-        return rewardRate.mul(rewardsDuration);
-    }
-
-    function min(uint256 a, uint256 b) public pure returns (uint256) {
-        return a < b ? a : b;
-    }
-
-    /* ========== MUTATIVE FUNCTIONS ========== */
-
-    function stake(uint256 amount)
-    external
-    nonReentrant
-    whenNotPaused
-    updateReward(msg.sender)
+    function calculateRewards(address _staker)
+        internal
+        view
+        returns (uint256 _rewards)
     {
-        require(amount > 0, "Cannot stake 0");
-        _totalSupply = _totalSupply.add(amount);
-        _balances[msg.sender] = _balances[msg.sender].add(amount);
-        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
-        emit Staked(msg.sender, amount);
+        return (((
+            ((block.timestamp - stakers[_staker].timeOfLastUpdate) *
+                stakers[_staker].amountStaked)
+        ) * rewardsPerHour) / 3600);
     }
 
-    function withdraw(uint256 amount)
-    public
-    nonReentrant
-    updateReward(msg.sender)
-    {
-        require(amount > 0, "Cannot withdraw 0");
-
-        _totalSupply = _totalSupply.sub(amount);
-        _balances[msg.sender] = _balances[msg.sender].sub(amount);
-        stakingToken.safeTransfer(msg.sender, amount);
-        emit Withdrawn(msg.sender, amount);
+    function claimRewards() external {
+        uint256 rewards = calculateRewards(msg.sender) +
+            stakers[msg.sender].unclaimedRewards;
+        require(rewards > 0, "You have no rewards to claim");
+        stakers[msg.sender].timeOfLastUpdate = block.timestamp;
+        stakers[msg.sender].unclaimedRewards = 0;
+        rewardsToken.safeTransfer(msg.sender, rewards);
     }
 
-    function getReward() public nonReentrant updateReward(msg.sender) {
-        uint256 reward = rewards[msg.sender];
-        if (reward > 0) {
-            rewards[msg.sender] = 0;
-            rewardsToken.safeTransfer(msg.sender, reward);
-            emit RewardPaid(msg.sender, reward);
-        }
-    }
+    function getStakedTokens(address _user) public view returns (StakedToken[] memory) {
+        if (stakers[_user].amountStaked > 0) {
+            StakedToken[] memory _stakedTokens = new StakedToken[](stakers[_user].amountStaked);
+            uint256 _index = 0;
 
-    function exit() external {
-        withdraw(_balances[msg.sender]);
-        getReward();
-    }
+            for (uint256 j = 0; j < stakers[_user].stakedTokens.length; j++) {
+                if (stakers[_user].stakedTokens[j].staker != (address(0))) {
+                    _stakedTokens[_index] = stakers[_user].stakedTokens[j];
+                    _index++;
+                }
+            }
 
-    /* ========== RESTRICTED FUNCTIONS ========== */
-
-    function notifyRewardAmount(uint256 reward)
-    external
-    onlyOwner
-    updateReward(address(0))
-    {
-        if (block.timestamp >= periodFinish) {
-            rewardRate = reward.div(rewardsDuration);
+            return _stakedTokens;
         } else {
-            uint256 remaining = periodFinish.sub(block.timestamp);
-            uint256 leftover = remaining.mul(rewardRate);
-            rewardRate = reward.add(leftover).div(rewardsDuration);
+            return new StakedToken[](0);
         }
-
-        // Ensure the provided reward amount is not more than the balance in the contract.
-        // This keeps the reward rate in the right range, preventing overflows due to
-        // very high values of rewardRate in the earned and rewardsPerToken functions;
-        // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
-        uint256 balance = rewardsToken.balanceOf(address(this));
-        require(
-            rewardRate <= balance.div(rewardsDuration),
-            "Provided reward too high"
-        );
-
-        lastUpdateTime = block.timestamp;
-        periodFinish = block.timestamp.add(rewardsDuration);
-        emit RewardAdded(reward);
     }
 
-    // Added to support recovering LP Rewards from other systems such as BAL to be distributed to holders
-    function recoverERC20(address tokenAddress, uint256 tokenAmount)
-    external
-    onlyOwner
-    {
-        // Cannot recover the staking token or the rewards token
-        require(
-            tokenAddress != address(rewardsToken),
-            "Cannot withdraw the rewards tokens"
-        );
-        if (_totalSupply != 0) {
-            require(
-                tokenAddress != address(stakingToken),
-                "Cannot withdraw the staking tokens"
-            );
-        }
-        IERC20(tokenAddress).safeTransfer(msg.sender, tokenAmount);
-        emit Recovered(tokenAddress, tokenAmount);
+    function availableRewards(address _staker) public view returns (uint256) {
+        uint256 rewards = calculateRewards(_staker) +
+            stakers[_staker].unclaimedRewards;
+        return rewards;
     }
 
-    function setRewardsDuration(uint256 _rewardsDuration) external onlyOwner {
-        require(
-            block.timestamp > periodFinish,
-            "Previous rewards period must be complete before changing the duration for the new period"
-        );
-        rewardsDuration = _rewardsDuration;
-        emit RewardsDurationUpdated(rewardsDuration);
-    }
-
-    /* ========== MODIFIERS ========== */
-
-    modifier updateReward(address account) {
-        rewardPerTokenStored = rewardPerToken();
-        lastUpdateTime = lastTimeRewardApplicable();
-        if (account != address(0)) {
-            rewards[account] = earned(account);
-            userRewardPerTokenPaid[account] = rewardPerTokenStored;
-        }
-        _;
-    }
-
-    /* ========== EVENTS ========== */
-
-    event RewardAdded(uint256 reward);
-    event Staked(address indexed user, uint256 amount);
-    event Withdrawn(address indexed user, uint256 amount);
-    event RewardPaid(address indexed user, uint256 reward);
-    event RewardsDurationUpdated(uint256 newDuration);
-    event Recovered(address token, uint256 amount);
 }
